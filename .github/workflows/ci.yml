@@ -1,0 +1,30 @@
+name: Client CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: client-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate mini program
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Validate JSON, pages and API configuration
+        run: node scripts/validate.mjs
+      - name: Check JavaScript syntax
+        run: >-
+          find . -type f -name '*.js' -not -path './.git/*' -print0 |
+          xargs -0 -n1 node --check
